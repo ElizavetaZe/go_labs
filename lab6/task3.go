@@ -8,22 +8,50 @@ import (
 )
 
 /**Функция, генерирующая случайные значения без сохранения в массив*/
-func genRandom(ch chan int) {
+func genRandom(out chan<- int) {
 	for i := 0; i < 10; i++ {
-		ch <- rand.Intn(100)
-		time.Sleep(time.Millisecond)
+		out <- rand.Intn(100)
+		time.Sleep(100 * time.Millisecond)
 	}
-	close(ch)
+	close(out)
 }
 
 /**Функция, проверяющая четность/нечетность*/
-func even_odd(num_ch chan int, result chan string) {
-	for x := range num_ch {
+func evenOdd(in <-chan int, nums chan<- int, msgs chan<- string) {
+	for x := range in {
+		nums <- x
 		if x%2 == 0 {
-			result <- fmt.Sprintf("%d четно", x)
+			msgs <- fmt.Sprintf("%d четно", x)
 		} else {
-			result <- fmt.Sprintf("%d нечетно", x)
+			msgs <- fmt.Sprintf("%d нечетно", x)
 		}
 	}
-	close(result)
+	close(nums)
+	close(msgs)
+}
+
+func runTask3() {
+	fmt.Println("Задание 3: select")
+	raw := make(chan int)
+	nums := make(chan int)
+	msgs := make(chan string)
+	go genRandom(raw)
+	go evenOdd(raw, nums, msgs)
+
+	for nums != nil || msgs != nil {
+		select {
+		case v, ok := <-nums:
+			if !ok {
+				nums = nil
+				continue
+			}
+			fmt.Println("Сгенерированное число:", v)
+		case m, ok := <-msgs:
+			if !ok {
+				msgs = nil
+				continue
+			}
+			fmt.Println(m)
+		}
+	}
 }

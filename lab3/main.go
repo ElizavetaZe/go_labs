@@ -46,7 +46,7 @@ func main() {
 	var str string
 	fmt.Println("Введите строку: ")
 	fmt.Scan(&str)
-	fmt.Println("Перевернутая строка: ", stringutils.ReserveStr(str))
+	fmt.Println("Перевернутая строка: ", stringutils.ReverseStr(str))
 
 	fmt.Println("Задание 4: ")
 	fmt.Println("Массив: ")
@@ -54,6 +54,7 @@ func main() {
 
 	fmt.Println("Задание 5: ")
 	arr := [7]int{1, 23, 15, 10, 7, 21, 19}
+	fmt.Println("Исходный массив: ", arr)
 	slice := arr[2:5]
 	fmt.Println("Срез массива: ", slice)
 	slice = append(slice, 50, 0)

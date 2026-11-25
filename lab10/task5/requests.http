@@ -1,0 +1,83 @@
+# Запросы для проверки защиты API (расширение REST Client для VS Code).
+# Логины и пароли: admin / admin123 (роль admin), user / user123 (роль user).
+
+@baseUrl = http://localhost:8080
+
+
+################ ВХОД ################
+
+### Вход администратора (200, в ответе токен)
+# @name loginAdmin
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{"username": "admin", "password": "admin123"}
+
+### Вход обычного пользователя (200)
+# @name loginUser
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{"username": "user", "password": "user123"}
+
+### Неверный пароль (401)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{"username": "admin", "password": "wrong"}
+
+
+################ НЕВАЛИДНЫЕ ТОКЕНЫ (401) ################
+
+### Без токена
+GET {{baseUrl}}/users
+
+### Мусор вместо токена
+GET {{baseUrl}}/users
+Authorization: Bearer abc.def.ghi
+
+################ РОЛЬ user ################
+
+### user читает список (200)
+GET {{baseUrl}}/users
+Authorization: Bearer {{loginUser.response.body.$.token}}
+
+### user читает одного (200)
+GET {{baseUrl}}/users/1
+Authorization: Bearer {{loginUser.response.body.$.token}}
+
+### user пытается добавить (403)
+POST {{baseUrl}}/users
+Content-Type: application/json
+Authorization: Bearer {{loginUser.response.body.$.token}}
+
+{"name": "Boris", "age": 30}
+
+### user пытается удалить (403)
+DELETE {{baseUrl}}/users/1
+Authorization: Bearer {{loginUser.response.body.$.token}}
+
+
+################ РОЛЬ admin ################
+
+### admin читает список (200)
+GET {{baseUrl}}/users
+Authorization: Bearer {{loginAdmin.response.body.$.token}}
+
+### admin добавляет (201)
+POST {{baseUrl}}/users
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.$.token}}
+
+{"name": "Boris", "age": 30}
+
+### admin обновляет (200)
+PUT {{baseUrl}}/users/1
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.$.token}}
+
+{"name": "Anna", "age": 21}
+
+### admin удаляет (204)
+DELETE {{baseUrl}}/users/2
+Authorization: Bearer {{loginAdmin.response.body.$.token}}

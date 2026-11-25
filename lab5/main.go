@@ -106,6 +106,7 @@ func main() {
 	areaAll(shapes)
 
 	fmt.Println("Задание 6:")
-	book := Book{title: "Война и мир", author: "Лев Толстой", year: 1869, page: 1984}
-	fmt.Println("Информация о книге:\n", book)
+	book1 := Book{title: "Война и мир", author: "Лев Толстой", year: 1869, page: 1984}
+	book2 := Book{title: "Золотой ключик", author: "Алексей Толстой", year: 1935, page: 112}
+	fmt.Println("Информация о книге:\n", book1, "\n", book2)
 }

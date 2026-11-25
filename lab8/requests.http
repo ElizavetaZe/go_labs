@@ -1,0 +1,122 @@
+@baseUrl = http://localhost:8080
+
+# 1. СОЗДАНИЕ (POST /users), ожидается 201 
+
+### Создать пользователя Anna (id = 1)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{"name": "Anna", "age": 20}
+
+### Создать пользователя Anton (id = 2)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{"name": "Anton", "age": 25}
+
+### Создать пользователя Boris (id = 3)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{"name": "Boris", "age": 25}
+
+### Создать пользователя с русским именем (id = 4)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{"name": "Мария", "age": 30}
+
+
+# 2. ЧТЕНИЕ (GET), ожидается 200 
+
+### Список всех пользователей
+GET {{baseUrl}}/users
+
+### Один пользователь
+GET {{baseUrl}}/users/1
+
+# 3. ОБНОВЛЕНИЕ (PUT /users/{id}), ожидается 200 
+
+### Изменить возраст Anna
+PUT {{baseUrl}}/users/1
+Content-Type: application/json
+
+{"name": "Anna", "age": 0}
+
+### Проверить, что данные изменились
+GET {{baseUrl}}/users/1
+
+# 4. УДАЛЕНИЕ (DELETE /users/{id}), ожидается 204 
+
+### Удалить пользователя 4
+DELETE {{baseUrl}}/users/4
+
+### Проверить, что его больше нет (ожидается 404)
+GET {{baseUrl}}/users/4
+
+# 5. ФИЛЬТРАЦИЯ И ПАГИНАЦИЯ (GET /users), ожидается 200 
+
+### Первая страница, 2 записи
+GET {{baseUrl}}/users?limit=2
+
+### Вторая страница, 2 записи
+GET {{baseUrl}}/users?limit=2&page=2
+
+### Поиск по части имени (Anna и Anton)
+GET {{baseUrl}}/users?name=An
+
+### Фильтр по возрасту (Anton и Boris)
+GET {{baseUrl}}/users?age=25
+
+### Оба фильтра вместе (только Anton)
+GET {{baseUrl}}/users?name=An&age=25
+
+### Страница без записей (пустой список)
+GET {{baseUrl}}/users?page=10
+
+# 6. ОШИБКИ, ожидается 400 или 404 
+
+### Пустое имя (400)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{"name": "", "age": 20}
+
+### Возраст вне диапазона (400)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{"name": "Anna", "age": 200}
+
+### Неверный JSON (400)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+это не json
+
+### Обновление с неверными данными (400)
+PUT {{baseUrl}}/users/1
+Content-Type: application/json
+
+{"name": "Anna", "age": 0}
+
+### id не число (400)
+GET {{baseUrl}}/users/abc
+
+### Пользователя не существует (404)
+GET {{baseUrl}}/users/999
+
+### Обновить несуществующего (404)
+PUT {{baseUrl}}/users/999
+Content-Type: application/json
+
+{"name": "Anna", "age": 20}
+
+### Удалить несуществующего (404)
+DELETE {{baseUrl}}/users/999
+
+### Неверный параметр limit (400)
+GET {{baseUrl}}/users?limit=1000
+
+### Неверный параметр page (400)
+GET {{baseUrl}}/users?page=0

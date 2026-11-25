@@ -1,0 +1,72 @@
+# Проверка сессий и защиты от CSRF (расширение REST Client для VS Code).
+# REST Client сам запоминает cookie из ответа и отправляет её в следующих запросах,
+# как это делает браузер. Выполняйте запросы сверху вниз.
+# Логины и пароли: admin / admin123, user / user123.
+
+@baseUrl = http://localhost:8080
+
+
+################ ВХОД И СЕССИЯ ################
+
+### Запрос без входа (401)
+GET {{baseUrl}}/users
+
+### Вход (200). В ответе csrf_token, в заголовках Set-Cookie с идентификатором сессии
+# @name login
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{"username": "admin", "password": "admin123"}
+
+### Информация о сессии (200). Cookie отправляется автоматически
+GET {{baseUrl}}/sessions
+
+### Чтение списка (200). CSRF-токен для GET не нужен
+GET {{baseUrl}}/users
+
+
+################ ЗАЩИТА ОТ CSRF ################
+
+### ПОДДЕЛЬНЫЙ запрос: cookie есть, а CSRF-токена нет (403)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{"name": "Hacker", "age": 30}
+
+### Запрос с неверным токеном (403)
+POST {{baseUrl}}/users
+Content-Type: application/json
+X-CSRF-Token: abc
+
+{"name": "Hacker", "age": 30}
+
+### НАСТОЯЩИЙ запрос: cookie и верный токен (201)
+POST {{baseUrl}}/users
+Content-Type: application/json
+X-CSRF-Token: {{login.response.body.$.csrf_token}}
+
+{"name": "Boris", "age": 30}
+
+### Обновление с токеном (200)
+PUT {{baseUrl}}/users/1
+Content-Type: application/json
+X-CSRF-Token: {{login.response.body.$.csrf_token}}
+
+{"name": "Anna", "age": 21}
+
+### Удаление без токена (403)
+DELETE {{baseUrl}}/users/2
+
+### Удаление с токеном (204)
+DELETE {{baseUrl}}/users/2
+X-CSRF-Token: {{login.response.body.$.csrf_token}}
+
+
+################ ВЫХОД ################
+
+### Выход с токеном (204): сессия уничтожается
+POST {{baseUrl}}/logout
+X-CSRF-Token: {{login.response.body.$.csrf_token}}
+
+### После выхода доступ закрыт (401)
+GET {{baseUrl}}/users
